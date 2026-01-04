@@ -7,6 +7,9 @@ const app = express();
 //in case it wasn't found, we set it to 3000
 const PORT = process.env.PORT || 3000;
 
+//allows to parse the json data 
+app.use(express.json());
+
 //routes
 app.use("api/auth", authRoutes);
 
