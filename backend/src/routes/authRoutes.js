@@ -12,7 +12,7 @@ const generateToken = (userId) => {
 //Endpoints //this is sent as /api/auth/register
 router.post("/register", async (req, res) => {
     try {
-        const {username, email, password} = req.body
+        const {email, username, password} = req.body
 
         if(!username || !email || !password){
             return res.status(400).json({message: "All fields are required"}); //400 = error
@@ -22,8 +22,8 @@ router.post("/register", async (req, res) => {
             return res.status(400).json({message: "Password should be at least 6 characters long"});
         }
 
-        if(username.length < 3){
-            return res.status(400).json({message: "Username should be at least 3 characters long"});
+        if(username.length < 5){
+            return res.status(400).json({message: "Username should be at least 5 characters long"});
         }
 
         //checking if the user already exists
@@ -46,24 +46,25 @@ router.post("/register", async (req, res) => {
             email,
             username,
             password,
-            profilImage,
-        })
+            profileImage: profilImage,
+        });
 
         //then saving the user
         await user.save();
 
         //creating te Token
         const token = generateToken(user._id);
-
-        res.status(201).json({//201 => ressource has been created
+       
+        //201 => ressource has been created
+        res.status(201).json({
             token,
             user: { //we specify to not send the user password too
                 id: user._id,
                 username: user.username,
                 email: user.email,
-                profileImage: user.profilImage
+                profileImage: user.profileImage
             },
-        })
+        });
 
     } catch (error) {
         console.log("Error in register route ", error);
