@@ -1,9 +1,15 @@
 import express from "express";
 import User from "../models/User.js";
+import jwt from "jsonwebtoken";
 
 const router = express.Router();
 
-//Endpoints
+//generating the token (jwt token used to avoid hitting the db each request)
+const generateToken = (userId) => {
+    return jwt.sign({userId}, process.env.JWT_SECRET, {expiresIn: "15d"});
+}
+
+//Endpoints //this is sent as /api/auth/register
 router.post("/register", async (req, res) => {
     try {
         const {username, email, password} = req.body
@@ -16,7 +22,7 @@ router.post("/register", async (req, res) => {
             return res.status(400).json({message: "Password should be at least 6 characters long"});
         }
 
-        if(username.length){
+        if(username.length < 3){
             return res.status(400).json({message: "Username should be at least 3 characters long"});
         }
 
@@ -33,18 +39,35 @@ router.post("/register", async (req, res) => {
 
         
         //getting a random avatar for the profil Image
-        
+        const profilImage = `https://api.dicebear.com/9.x/micah/svg?seed=${username}`;
 
         //creating the user
         const user = new User({
             email,
             username,
             password,
-            profilImage:"",
+            profilImage,
+        })
+
+        //then saving the user
+        await user.save();
+
+        //creating te Token
+        const token = generateToken(user._id);
+
+        res.status(201).json({//201 => ressource has been created
+            token,
+            user: { //we specify to not send the user password too
+                id: user._id,
+                username: user.username,
+                email: user.email,
+                profileImage: user.profilImage
+            },
         })
 
     } catch (error) {
-        
+        console.log("Error in register route ", error);
+        res.status(500).json({message: "Internal server error"});
     }
 });
 
