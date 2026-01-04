@@ -1,6 +1,7 @@
 import express from "express";
-import "dotenv/config";
+import "dotenv/config"; //to access the env variables
 import authRoutes from "./routes/authRoutes.js"; //we are useing type modules so we need to add the type (.js)
+import bookRoutes from "./routes/bookRoutes.js";
 import { connectDB } from "./lib/db.js";
 
 const app = express();
@@ -12,6 +13,7 @@ app.use(express.json());
 
 //routes
 app.use("/api/auth", authRoutes);
+app.use("/api/books", bookRoutes);
 
 //here we are using nodemon because each time we make changes it will automatically restarted
 app.listen(PORT, () => {
