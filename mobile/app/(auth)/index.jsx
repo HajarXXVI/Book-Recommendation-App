@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   KeyboardAvoidingView,
+  Platform
 } from 'react-native';
 import { Link } from 'expo-router';
 import styles from "../../assets/styles/login.styles"
@@ -19,7 +20,7 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   //function to handle login button press
   const handleLogin = () => {
@@ -89,7 +90,7 @@ export default function Login() {
                     onPress={() => setShowPassword(!showPassword)}
                   >
                     <Ionicons
-                      name={showPassword ? "eye-off-outline" : "eye-outline"} //eye icon from ionicons
+                      name={!showPassword ? "eye-off-outline" : "eye-outline"} //eye icon from ionicons
                       size={20}
                       color={COLORS.primary}
                     />
