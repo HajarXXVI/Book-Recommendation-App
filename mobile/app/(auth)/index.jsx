@@ -22,7 +22,7 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const {user, token, login, isLoading} = useAuthStore();
+  const {login, isLoading} = useAuthStore();
 
   //function to handle login button press
   const handleLogin = async () => {
