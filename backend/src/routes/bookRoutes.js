@@ -5,6 +5,8 @@ import protectRoute from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
+import util from 'util';
+
 //protectRoute => only logged in users can create books
 router.post("/", protectRoute, async (req, res) => {
   try {
@@ -32,8 +34,8 @@ router.post("/", protectRoute, async (req, res) => {
     res.status(201).json(newBook); //201 => created
 
   } catch (error) {
-    console.log("Error creating book", error);
-    res.status(500).json({ message: error.message }); //500 => internal server error
+    console.error("Error creating book (safe log):", util.inspect(error, { showHidden: false, depth: 2, maxStringLength: 200 }));
+    res.status(500).json({ message: "An error occurred during book creation" }); //500 => internal server error
   }
 });
 

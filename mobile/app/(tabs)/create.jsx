@@ -10,13 +10,15 @@ import {
   Alert,
   ActivityIndicator
 } from 'react-native'
-import React, {useState} from 'react'
+import React, { useState } from 'react'
 import { useRouter } from 'expo-router';
 import styles from '../../assets/styles/create.styles';
 import { Ionicons } from '@expo/vector-icons';
 import COLORS from '../../constants/colors.js';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
+import { API_URL } from "../../constants/config.js";
+import { useAuthStore } from '../../store/authStore.js';
 
 export default function Create() {
 
@@ -28,6 +30,8 @@ export default function Create() {
   const [loading, setLoading] = useState(false); // to show loading indicator during upload
 
   const router = useRouter();
+
+  const { token } = useAuthStore();
 
   //this is used to pick an image from the device's media library
   const pickImage = async () => {
@@ -75,8 +79,71 @@ export default function Create() {
 
   //this is used to handle the submission of the book recommendation form
   const handleSubmit = async () => {
+    //if any field is missing, show an alert and return early
+    if (!title || !caption || !imageBase64 || !rating) {
+      Alert.alert("Error", "Please fill in all fields");
+      return;
+    }
 
-  }
+    try {
+      setLoading(true);
+
+      // Determine image type safely
+      let imageType = "image/jpeg"; // Default fallback
+      if (image) {
+        const uriParts = image.split(".");
+        const potentialExtension = uriParts[uriParts.length - 1];
+        // Check if the extension looks valid (alphanumeric and reasonable length)
+        if (potentialExtension && /^[a-zA-Z0-9]{3,4}$/.test(potentialExtension)) {
+          imageType = `image/${potentialExtension.toLowerCase()}`;
+        }
+      }
+
+      const imageDataUrl = `data:${imageType};base64,${imageBase64}`; //to create a data URL that includes the image's MIME type and its base64-encoded data
+
+      const response = await fetch(`${API_URL}/api/books`, { // Send a POST request to the /books endpoint of the API to create a new book recommendation
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`, // Include the token in the Authorization header in order to authenticate the request
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title,
+          caption,
+          rating: rating.toString(),
+          image: imageDataUrl,
+        }),
+      });
+
+      //parse the response from the server which means converting the response data from JSON format into a JavaScript object
+      // DEBUG: log raw text
+      const text = await response.text();
+      console.log("Raw response:", text); // <-- see what the server actually sent
+
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (err) {
+        console.error("Failed to parse JSON:", err);
+        throw new Error(`Server returned invalid JSON. Text: ${text.substring(0, 200)}`);
+      }
+      //if the post is created successfully, show a success alert and reset the form fields
+      Alert.alert("Success", "Your book recommendation has been posted!");
+      //reset form fields after successful submission
+      setTitle("");
+      setCaption("");
+      setRating(3);
+      setImage(null);
+      setImageBase64(null);
+      //navigate back to the home screen after successful submission
+      router.push("/");
+    } catch (error) {
+      console.error("Error creating post:", error);
+      Alert.alert("Error", error.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   //render rating picker component
   const renderRatingPicker = () => {
@@ -100,7 +167,7 @@ export default function Create() {
   return (
     // KeyboardAvoidingView is used to adjust the view when the keyboard is open, so that input fields are not hidden behind the keyboard
     <KeyboardAvoidingView
-      style={{flex: 1}}
+      style={{ flex: 1 }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <ScrollView
@@ -116,27 +183,27 @@ export default function Create() {
 
           <View style={styles.form}>
 
-          {/* BOOK TITLE */}
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Book Title</Text>
-            <View style={styles.inputContainer}>
-              <Ionicons
-                name="book-outline"
-                size={20}
-                color={COLORS.textSecondary}
-                style={styles.inputIcon}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Enter book title"
-                placeholderTextColor={COLORS.placeholderText}
-                value={title}
-                onChangeText={setTitle}
-              />
+            {/* BOOK TITLE */}
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Book Title</Text>
+              <View style={styles.inputContainer}>
+                <Ionicons
+                  name="book-outline"
+                  size={20}
+                  color={COLORS.textSecondary}
+                  style={styles.inputIcon}
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter book title"
+                  placeholderTextColor={COLORS.placeholderText}
+                  value={title}
+                  onChangeText={setTitle}
+                />
+              </View>
             </View>
-          </View>
 
-          {/* RATING */}
+            {/* RATING */}
             <View style={styles.formGroup}>
               <Text style={styles.label}>Your Rating</Text>
               {renderRatingPicker()}
