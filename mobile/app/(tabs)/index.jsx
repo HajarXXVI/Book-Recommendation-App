@@ -1,4 +1,11 @@
-import { View, Text, TouchableOpacity, FlatList } from 'react-native'
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  FlatList,
+  ActivityIndicator,
+  RefreshControl
+} from 'react-native'
 import React from 'react'
 import { useAuthStore } from '../../store/authStore.js';
 import { useState, useEffect } from 'react';
@@ -8,7 +15,7 @@ import { Image } from 'expo-image'; //we are using expo-image instead of react-n
 import { Ionicons } from '@expo/vector-icons';
 import COLORS from '../../constants/colors.js';
 import { formatPublishDate } from '../../lib/utils.js';
-
+import Loader from "../../components/loader";
 
 export default function Home() {
 
@@ -24,7 +31,7 @@ export default function Home() {
       if (refresh) setRefreshing(true);
       else if (pageNum === 1) setLoading(true);
 
-      const response = await fetch(`${API_URL}/api/books?page=${pageNum}&limit=5`, {
+      const response = await fetch(`${API_URL}/api/books?page=${pageNum}&limit=2`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -53,18 +60,24 @@ export default function Home() {
       console.error('Error fetching books:', error);
     } finally {
       if (refresh) {
+        //to show a loading indicator while refreshing
+        await Sleep(800);
         setRefreshing(false);
       } else setLoading(false);
     }
   };
 
+  //to fetch books when the component mounts when the user refreshes the page
   useEffect(() => {
     fetchBooks();
   }, []);
 
-  const handleLoadMore = () => {
+  //to handle loading more books when the user reaches the end of the list
+  const handleLoadMore = async () => {
+    if (hasMore && !loading && !refreshing) await fetchBooks(page + 1);
   };
 
+  //to render each book item in the list
   const renderItem = ({ item }) => (
     <View style={styles.bookCard}>
       <View style={styles.bookHeader}>
@@ -88,6 +101,7 @@ export default function Home() {
 
   );
 
+  //to render rating stars
   const renderRatingStars = (rating) => {
     const stars = [];
     for (let i = 1; i <= 5; i++) {
@@ -104,21 +118,45 @@ export default function Home() {
     return stars;
   };
 
+  //if loading is true, show the loader component
+  if (loading) return <Loader size="large" />;
+
   return (
     <View style={styles.container}>
       <FlatList
+        //flatlist only renders the books that are visible on the screen
         data={books}
         renderItem={renderItem}
-        keyExtractor={item => item.id}
+        keyExtractor={item => item._id}
         contentContainerStyle={styles.listContainer}
         showVerticalScrollIndicator={false}
 
+        //to add a pull to refresh feature(refreshControl)
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => fetchBooks(1, true)}
+            colors={[COLORS.primary]}
+            tintColor={COLORS.primary}
+          />
+        }
+
+        //to handle loading more books when the user reaches the end of the list
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.1}
         //if the books array is not empty, show this component
         ListHeaderComponent={
           <View style={styles.header}>
             <Text style={styles.headerTitle}>BookWorm 📚</Text>
             <Text style={styles.headerSubtitle}>Discover great reads from the community👇</Text>
           </View>
+        }
+
+        //to show a loading indicator when loading more books
+        ListFooterComponent={
+          hasMore && books.length > 0 ? (
+            <ActivityIndicator style={styles.footerLoader} size="small" color={COLORS.primary} />
+          ) : null
         }
 
         //if the books array is empty, show this component
