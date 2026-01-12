@@ -19,7 +19,7 @@ import COLORS from "../../constants/colors";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import Loader from "../../components/loader";
-
+import { sleep } from ".";
 
 
 export default function Profile() {
@@ -54,6 +54,11 @@ export default function Profile() {
     }
   };
 
+
+  //fetch user books on mount
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   //handle delete book
   const handleDeleteBook = async (bookId) => {
@@ -91,7 +96,7 @@ export default function Profile() {
     }
   };
 
-
+  //renders each book item in the list
   const renderBookItem = ({ item }) => (
     <View style={styles.bookItem}>
       <Image source={item.image} style={styles.bookImage} />
@@ -114,7 +119,6 @@ export default function Profile() {
     </View>
   );
 
-
   //render rating stars
   const renderRatingStars = (rating) => {
     const stars = [];
@@ -133,12 +137,16 @@ export default function Profile() {
   };
 
 
-  //fetch user books on mount
-  useEffect(() => {
-    fetchData();
-  }, []);
+  //handle refresh to update the list of books
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await sleep(500); //wait for 500ms to simulate loading to make it more user-friendly
+    await fetchData();
+    setRefreshing(false);
+  };
 
-
+  //show loading indicator while loading
+  if (isLoading && !refreshing) return <Loader />;
 
   return (
     <View style={styles.container}>
@@ -158,14 +166,14 @@ export default function Profile() {
         keyExtractor={(item) => item._id}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.booksList}
-        // refreshControl={
-        //   <RefreshControl
-        //     refreshing={refreshing}
-        //     onRefresh={handleRefresh}
-        //     colors={[COLORS.primary]}
-        //     tintColor={COLORS.primary}
-        //   />
-        // }
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={[COLORS.primary]}
+            tintColor={COLORS.primary}
+          />
+        }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Ionicons name="book-outline" size={50} color={COLORS.textSecondary} />

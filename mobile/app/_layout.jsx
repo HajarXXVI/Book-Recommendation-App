@@ -1,11 +1,15 @@
 import SafeScreen from "../components/SafeScreen";
-import { Stack, useRouter, useSegments, useRootNavigationState } from "expo-router";
+import { Stack, useRouter, useSegments, useRootNavigationState, SplashScreen } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useAuthStore } from "../store/authStore";
 import React, { useEffect } from "react";
 import { View, ActivityIndicator } from "react-native";
+import { useFonts } from "expo-font";
 
+
+//prevent the splash screen from auto-hiding
+SplashScreen.preventAutoHideAsync();
 
 //(tabs) and (auth) layouts will be rendered inside this root layout, which provides safe area handling and a status bar
 export default function RootLayout() {
@@ -21,6 +25,15 @@ export default function RootLayout() {
 
   const { checkAuth, user, token, isCheckingAuth } = useAuthStore(); //get the checkAuth method, user and token state from the auth store
 
+  //load custom fonts
+  const [fontsLoaded] = useFonts({
+    "JetBrainsMono-Medium": require("../assets/fonts/JetBrainsMono-Medium.ttf"), //it is used in signUp styles too
+  });
+
+  //hide the splash screen when the app loads (splashScreen is the screen that is shown while the app is loading)
+  useEffect(() => {
+    if (fontsLoaded) SplashScreen.hideAsync();
+  }, [fontsLoaded]);
 
   //this is used to check authentication status when the app loads
   useEffect(() => {
