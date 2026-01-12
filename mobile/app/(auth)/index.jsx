@@ -22,7 +22,7 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const {login, isLoading} = useAuthStore();
+  const {login, isLoading} = useAuthStore(); //get the login method and isLoading state from the auth store
 
   //function to handle login button press
   const handleLogin = async () => {
@@ -31,6 +31,8 @@ export default function Login() {
       Alert.alert("Error:", result.error); //show an alert if login failed
     } //if login is successful, the auth store will update the user and token states and persist them in async storage
   };
+
+  
   return (
     <KeyboardAvoidingView
       style={{flex: 1}}

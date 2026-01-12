@@ -12,6 +12,7 @@ export const useAuthStore = create((set) => ({ //this setter function is used to
     user: null, //initial user state
     token: null, //initial token state
     isLoading: false, //initial loading state to manage loading during async operations like signup/login
+    isCheckingAuth: true, //initial state to manage auth checking during app load
 
     //method to signup a user
     register: async (username, email, password) => {
@@ -109,6 +110,8 @@ export const useAuthStore = create((set) => ({ //this setter function is used to
             set({user, token});
         } catch (error) {
             console.log("Error checking auth:", error);
+        } finally {
+            set({ isCheckingAuth: false });
         }
     },
 

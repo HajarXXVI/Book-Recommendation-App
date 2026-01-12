@@ -1,8 +1,8 @@
-import SafeScreen from "@/components/SafeScreen";
+import SafeScreen from "../components/SafeScreen";
 import { Stack, useRouter, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { useAuthStore } from "@/store/authStore";
+import { useAuthStore } from "../store/authStore";
 import React from "react";
 import { useEffect } from "react";
 
