@@ -5,6 +5,9 @@ import { useState, useEffect } from 'react';
 import { API_URL } from '../../constants/config.js';
 import styles from '../../assets/styles/home.styles.js';
 import { Image } from 'expo-image'; //we are using expo-image instead of react-native Image to support remote images, remote images are the ones that are not stored locally on the device
+import { Ionicons } from '@expo/vector-icons';
+import COLORS from '../../constants/colors.js';
+import { formatPublishDate } from '../../lib/utils.js';
 
 
 export default function Home() {
@@ -65,15 +68,31 @@ export default function Home() {
         <Image source={item.image} style={styles.bookImage} contentFit="cover" />
       </View>
 
-      {/* <View style={styles.bookDetails}>
+      <View style={styles.bookDetails}>
         <Text style={styles.bookTitle}>{item.title}</Text>
         <View style={styles.ratingContainer}>{renderRatingStars(item.rating)}</View>
         <Text style={styles.caption}>{item.caption}</Text>
         <Text style={styles.date}>Shared on {formatPublishDate(item.createdAt)}</Text>
-      </View> */}
+      </View>
     </View>
 
   );
+
+  const renderRatingStars = (rating) => {
+    const stars = [];
+    for (let i = 1; i <= 5; i++) {
+      stars.push(
+        <Ionicons
+          key={i}
+          name={i <= rating ? "star" : "star-outline"}
+          size={16}
+          color={i <= rating ? "#f4b400" : COLORS.textSecondary}
+          style={{ marginRight: 2 }}
+        />
+      );
+    }
+    return stars;
+  };
 
   return (
     <View style={styles.container}>
@@ -84,7 +103,6 @@ export default function Home() {
         contentContainerStyle={styles.listContainer}
         showVerticalScrollIndicator={false}
       />
-
 
     </View>
   )
