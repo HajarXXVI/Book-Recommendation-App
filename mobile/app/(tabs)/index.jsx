@@ -63,7 +63,7 @@ export default function Home() {
     } finally {
       if (refresh) {
         //to show a loading indicator while refreshing
-        await Sleep(800);
+        await sleep(800);
         setRefreshing(false);
       } else setLoading(false);
     }
