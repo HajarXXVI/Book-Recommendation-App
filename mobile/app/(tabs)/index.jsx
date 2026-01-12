@@ -34,7 +34,17 @@ export default function Home() {
 
       if (!response.ok) throw new Error(data.message || "Failed to fetch books");
 
-      setBooks((prevBooks) => [...prevBooks, ...data.books]);
+      // setBooks((prevBooks) => [...prevBooks, ...data.books]);
+
+      //we are using this to remove duplicates from the books array when we scroll down to load more books
+      const uniqueBooks =
+        refresh || pageNum === 1
+          ? data.books
+          : Array.from(new Set([...books, ...data.books].map((book) => book._id))).map((id) =>
+            [...books, ...data.books].find((book) => book._id === id)
+          );
+      setBooks(uniqueBooks);
+
       setHasMore(pageNum < data.totalPages);
 
       setPage(pageNum);
@@ -102,6 +112,23 @@ export default function Home() {
         keyExtractor={item => item.id}
         contentContainerStyle={styles.listContainer}
         showVerticalScrollIndicator={false}
+
+        //if the books array is not empty, show this component
+        ListHeaderComponent={
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>BookWorm 📚</Text>
+            <Text style={styles.headerSubtitle}>Discover great reads from the community👇</Text>
+          </View>
+        }
+
+        //if the books array is empty, show this component
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Ionicons name="book-outline" size={60} color={COLORS.textSecondary} />
+            <Text style={styles.emptyText}>No recommendations yet</Text>
+            <Text style={styles.emptySubtext}>Be the first to share a book!</Text>
+          </View>
+        }
       />
 
     </View>
