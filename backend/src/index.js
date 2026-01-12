@@ -13,6 +13,12 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(cors()); //to allow cross origin requests from the frontend (react native app)
 
+// Request logger
+app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    next();
+});
+
 //routes
 app.use("/api/auth", authRoutes);
 app.use("/api/books", bookRoutes);
